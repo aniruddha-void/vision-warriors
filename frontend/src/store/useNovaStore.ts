@@ -21,6 +21,7 @@ import { initialTasks } from '../data/tasks';
 import { initialTemplates } from '../data/templates';
 import { initialConsentLogs } from '../data/consentLogs';
 import { defaultCategoryThresholds, classify, evaluateOfferEligibility } from '../lib/segmentation';
+import { novaApi } from '../lib/api';
 
 export interface NovaSettings {
   shopId: string;
@@ -44,6 +45,12 @@ interface CheckInPayload {
 interface NovaStoreState {
   currentRole: UserRole;
   setRole: (role: UserRole) => void;
+
+  currentUser: any | null;
+  isAuthenticated: boolean;
+  setCurrentUser: (user: any, token?: string) => void;
+  loadFromBackend: () => Promise<void>;
+  logout: () => Promise<void>;
 
   businessName: string;
   ownerName: string;
@@ -136,6 +143,86 @@ export const useNovaStore = create<NovaStoreState>()(
           `Active session role changed to ${role.toUpperCase()}.`
         );
         set({ currentRole: role });
+      },
+
+      currentUser: null,
+      isAuthenticated: Boolean(localStorage.getItem('nova_auth_token')),
+
+      setCurrentUser: (user, token) => {
+        if (token) {
+          localStorage.setItem('nova_auth_token', token);
+        }
+        set({
+          currentUser: user,
+          isAuthenticated: true,
+          currentRole: user.role,
+          businessName: user.shopName || get().businessName,
+          ownerName: user.name || get().ownerName,
+        });
+        get().loadFromBackend();
+      },
+
+      loadFromBackend: async () => {
+        try {
+          const role = get().currentRole;
+          if (role === 'owner' || role === 'manager') {
+            try {
+              const sRes = await novaApi.getSettings();
+              if (sRes?.data) {
+                set({
+                  settings: sRes.data,
+                  businessName: sRes.data.shopName || get().businessName,
+                });
+              }
+            } catch (_) {}
+            try {
+              const cRes = await novaApi.getCustomers();
+              if (cRes?.data && cRes.data.length > 0) {
+                set({ customers: cRes.data });
+              }
+            } catch (_) {}
+            try {
+              const aRes = await novaApi.getActions();
+              if (aRes?.data) set({ actions: aRes.data });
+            } catch (_) {}
+          }
+
+          if (role === 'owner' || role === 'manager' || role === 'staff') {
+            try {
+              const tRes = await novaApi.getTasks();
+              if (tRes?.data) set({ tasks: tRes.data });
+            } catch (_) {}
+            try {
+              const tmRes = await novaApi.getTemplates();
+              if (tmRes?.data) set({ templates: tmRes.data });
+            } catch (_) {}
+          }
+
+          if (role === 'owner' || role === 'manager' || role === 'auditor') {
+            try {
+              const clRes = await novaApi.getConsentLogs();
+              if (clRes?.data) set({ consentLogs: clRes.data });
+            } catch (_) {}
+            try {
+              const alRes = await novaApi.getAuditLogs();
+              if (alRes?.data) set({ auditLogs: alRes.data });
+            } catch (_) {}
+          }
+        } catch (err) {
+          console.warn('[NovaStore Sync Note]:', err);
+        }
+      },
+
+      logout: async () => {
+        try {
+          await novaApi.logout();
+        } catch (_) {}
+        localStorage.removeItem('nova_auth_token');
+        set({
+          currentUser: null,
+          isAuthenticated: false,
+          currentRole: 'owner',
+        });
       },
 
       businessName: 'Chai & Co',

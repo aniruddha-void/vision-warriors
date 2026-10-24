@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useNovaStore } from '../../store/useNovaStore';
+import { novaApi } from '../../lib/api';
 import { Logo } from '../ui/Logo';
 import { can } from '../../lib/permissions';
 import { UserRole } from '../../types';
@@ -26,7 +27,8 @@ import {
   UserCheck,
   MessageSquareQuote,
   Coffee,
-  Check
+  Check,
+  LogOut,
 } from 'lucide-react';
 
 export const OwnerAppLayout: React.FC = () => {
@@ -46,10 +48,28 @@ export const OwnerAppLayout: React.FC = () => {
     tasks,
     currentRole,
     setRole,
+    setCurrentUser,
+    loadFromBackend,
+    logout,
     toggleDemoMode,
     flipDemoCustomerConsent,
     addCheckIn,
   } = useNovaStore();
+
+  useEffect(() => {
+    novaApi.getMe()
+      .then((res) => {
+        if (res.success && res.user) {
+          setCurrentUser(res.user);
+        }
+      })
+      .catch(() => {
+        if (!localStorage.getItem('nova_auth_token')) {
+          navigate('/login');
+        }
+      });
+    loadFromBackend();
+  }, []);
 
   const demoCustomer = customers.find((c) => c.id === settings.demoCustomerId);
   const isDemoCustomerConsented = demoCustomer?.consent.personalisedOffers ?? false;
@@ -84,7 +104,7 @@ export const OwnerAppLayout: React.FC = () => {
     }, 2500);
   };
 
-  const rolesList: UserRole[] = ['owner', 'manager', 'staff', 'auditor'];
+  const rolesList = ['owner', 'manager', 'staff', 'auditor'] as const;
 
   return (
     <div className="min-h-screen bg-[#F6F6F7] flex flex-col lg:flex-row text-[#0B0B0C]">
@@ -193,6 +213,17 @@ export const OwnerAppLayout: React.FC = () => {
             <span>Open counter check-in</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
+
+          <button
+            onClick={async () => {
+              await logout();
+              navigate('/login');
+            }}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-[12px] text-xs text-[#EF4444] hover:bg-[#EF4444]/10 font-medium transition-colors cursor-pointer"
+          >
+            <span>Sign out</span>
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
       </aside>
 
@@ -262,9 +293,19 @@ export const OwnerAppLayout: React.FC = () => {
                   {rolesList.map((r) => (
                     <button
                       key={r}
-                      onClick={() => {
-                        setRole(r);
+                      onClick={async () => {
                         setShowRoleMenu(false);
+                        try {
+                          const res = await novaApi.demoLogin(r);
+                          if (res.success && res.user) {
+                            setCurrentUser(res.user, res.token);
+                          }
+                        } catch (_) {
+                          setRole(r);
+                        }
+                        if (r === 'staff') navigate('/app/tasks');
+                        else if (r === 'auditor') navigate('/app/consent-log');
+                        else navigate('/app');
                       }}
                       className={`w-full text-left px-3 py-1.5 rounded-[10px] text-xs font-medium capitalize flex items-center justify-between cursor-pointer ${
                         currentRole === r
@@ -318,6 +359,19 @@ export const OwnerAppLayout: React.FC = () => {
             >
               {ownerName.charAt(0)}
             </div>
+
+            {/* Quick Header Sign out button */}
+            <button
+              onClick={async () => {
+                await logout();
+                navigate('/login');
+              }}
+              className="h-8 px-2.5 rounded-[10px] bg-[#F6F6F7] hover:bg-[#FEE2E2] hover:text-[#DC2626] border border-black/[0.08] text-xs font-semibold text-[#6E6E73] flex items-center gap-1 cursor-pointer transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
 
           </div>
         </header>

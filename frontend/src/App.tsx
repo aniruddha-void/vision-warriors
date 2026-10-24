@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { SignupPage } from './pages/auth/SignupPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { PrivacyPage } from './pages/public/PrivacyPage';
 import { ConsentManagerPage } from './pages/public/ConsentManagerPage';
 import { FallbackOffersPage } from './pages/public/FallbackOffersPage';
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/checkin/:shopId" element={<CustomerCheckInPage />} />
         <Route path="/thanks" element={<ThanksPage />} />

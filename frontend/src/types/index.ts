@@ -176,3 +176,16 @@ export interface CategoryThresholds {
   attentionMinDays: number; // 14
   attentionMaxDays: number; // 21
 }
+
+export interface NovaSettings {
+  shopId: string;
+  shopName: string;
+  dataMinimization: boolean;
+  retentionPeriodMonths: number;
+  defaultChannel: 'whatsapp' | 'sms' | 'email';
+  privacyMode: boolean;
+  demoMode: boolean;
+  demoCustomerId: string;
+  categoryThresholds?: CategoryThresholds;
+}
+
