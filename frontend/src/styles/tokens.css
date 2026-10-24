@@ -1,0 +1,48 @@
+:root {
+  --bg-page: #F6F6F7;
+  --bg-hero: #F1F1F2;
+  --bg-card: #FFFFFF;
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  
+  --text-heading: #0B0B0C;
+  --text-muted: #9A9A9E;
+  --text-body: #3A3A3D;
+  --text-secondary: #6E6E73;
+  
+  --primary-blue: #2F6BFF;
+  --primary-blue-hover: #1F58E6;
+  
+  --cyan-start: #1EC0FF;
+  --cyan-end: #7AD8FF;
+  
+  --accent-orange: #F59E0B;
+  --tile-green: #1EC7A0;
+  --status-success: #22C55E;
+  --status-warning: #F59E0B;
+  --status-danger: #EF4444;
+  
+  --sticky-yellow: #FFE96B;
+  --sticky-text: #3B3200;
+  
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-floating: 0 14px 34px -8px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* Background dotted pattern */
+.bg-dotted-pattern {
+  background-color: var(--bg-hero);
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.075) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+/* Cyan gradient panel */
+.bg-cyan-gradient {
+  background: linear-gradient(170deg, #1EC0FF, #7AD8FF);
+}
+
+/* Tabular numerals for timers and stats */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

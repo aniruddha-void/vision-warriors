@@ -1,0 +1,53 @@
+import { TaskItem } from '../types';
+
+export const initialTasks: TaskItem[] = [
+  {
+    id: 'task-1',
+    title: 'Send weekend offer to at-risk patrons',
+    actionId: 'act-1',
+    channel: 'whatsapp',
+    customerCount: 12,
+    dueTime: '13:00 - 13:45',
+    completed: true,
+    segmentName: 'At-risk customers',
+  },
+  {
+    id: 'task-2',
+    title: 'Trigger 2nd-visit stamp double booster to new guests',
+    actionId: 'act-2',
+    channel: 'whatsapp',
+    customerCount: 8,
+    dueTime: '14:30 - 15:00',
+    completed: true,
+    segmentName: 'New customers',
+  },
+  {
+    id: 'task-3',
+    title: 'Dispatch artisan blend VIP invitation to top regulars',
+    actionId: 'act-3',
+    channel: 'whatsapp',
+    customerCount: 16,
+    dueTime: '15:30 - 16:00',
+    completed: false,
+    segmentName: 'Regulars',
+  },
+  {
+    id: 'task-4',
+    title: 'Notify high-spenders about afternoon savory roll pairing',
+    actionId: 'act-4',
+    channel: 'whatsapp',
+    customerCount: 9,
+    dueTime: '16:00 - 16:45',
+    completed: false,
+    segmentName: 'High spenders',
+  },
+  {
+    id: 'task-5',
+    title: 'Review weekly privacy & consent audit log',
+    channel: 'email',
+    customerCount: 60,
+    dueTime: '18:00 - 18:30',
+    completed: false,
+    segmentName: 'All customers',
+  },
+];

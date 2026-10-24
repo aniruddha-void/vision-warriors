@@ -1,0 +1,58 @@
+import { ConsentLogEvent } from '../types';
+
+export const initialConsentLogs: ConsentLogEvent[] = [
+  {
+    id: 'log-101',
+    customerId: 'C-1001',
+    eventType: 'Granted',
+    timestamp: '2026-10-23T14:32:00Z',
+    purposes: ['Purchase history', 'Visit frequency', 'Personalised offers'],
+    channels: ['WhatsApp', 'SMS', 'Email'],
+    details: 'Customer granted consent via QR code table scan at Chai & Co.',
+  },
+  {
+    id: 'log-102',
+    customerId: 'C-1040',
+    eventType: 'Updated',
+    timestamp: '2026-10-22T11:15:00Z',
+    purposes: ['Visit frequency only', 'Personalised offers'],
+    channels: ['WhatsApp'],
+    details: 'Customer turned off purchase history tracking. Preferences saved.',
+  },
+  {
+    id: 'log-103',
+    customerId: 'C-1052',
+    eventType: 'Withdrawn',
+    timestamp: '2026-10-21T16:45:00Z',
+    purposes: [],
+    channels: [],
+    details: 'Master toggle switched off. Customer immediately removed from all segment queries and action distributions.',
+  },
+  {
+    id: 'log-104',
+    customerId: 'C-1004',
+    eventType: 'Granted',
+    timestamp: '2026-10-20T10:20:00Z',
+    purposes: ['Purchase history', 'Visit frequency', 'Personalised offers'],
+    channels: ['WhatsApp', 'SMS', 'Email'],
+    details: 'Consent confirmed during digital receipt opt-in.',
+  },
+  {
+    id: 'log-105',
+    customerId: 'C-1057',
+    eventType: 'Withdrawn',
+    timestamp: '2026-10-18T18:05:00Z',
+    purposes: [],
+    channels: [],
+    details: 'Withdrew all data usage via customer consent portal.',
+  },
+  {
+    id: 'log-106',
+    customerId: 'C-1014',
+    eventType: 'Updated',
+    timestamp: '2026-10-17T09:30:00Z',
+    purposes: ['Purchase history', 'Visit frequency'],
+    channels: ['WhatsApp'],
+    details: 'Disabled SMS channel alerts; retained WhatsApp notifications.',
+  },
+];
