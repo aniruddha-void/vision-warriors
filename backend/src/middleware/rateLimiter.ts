@@ -1,10 +1,12 @@
-import { Request } from 'express';
+import type { Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 
-const shouldSkip = (req: Request) =>
-  process.env.NODE_ENV === 'test' ||
-  process.env.NODE_ENV !== 'production' ||
-  req.headers['x-test-suite'] === 'nova-test-runner';
+const shouldSkip = (req: Request, _res?: Response): boolean =>
+  Boolean(
+    process.env.NODE_ENV === 'test' ||
+    process.env.NODE_ENV !== 'production' ||
+    req.headers['x-test-suite'] === 'nova-test-runner'
+  );
 
 /**
  * Rate limiter for password reset request submissions (Forgot Password).

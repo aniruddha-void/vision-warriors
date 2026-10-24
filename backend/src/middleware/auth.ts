@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { VerifyErrors, JwtPayload } from 'jsonwebtoken';
 import { UserRole } from '../types/index.js';
 import { config } from '../config/env.js';
 
@@ -9,6 +9,15 @@ export interface AuthUser {
   name: string;
   role: UserRole;
   shopId: string;
+  isDemo?: boolean;
+}
+
+export interface JwtUserPayload extends JwtPayload {
+  id?: string;
+  email?: string;
+  name?: string;
+  role?: UserRole;
+  shopId?: string;
   isDemo?: boolean;
 }
 
@@ -37,7 +46,7 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
     return;
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
+  jwt.verify(token, JWT_SECRET, (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
     if (err) {
       const isExpired = err.name === 'TokenExpiredError';
       res.status(401).json({
@@ -47,18 +56,19 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    if (!decoded || !decoded.id || !decoded.role || !decoded.shopId) {
+    if (!decoded || typeof decoded === 'string' || !decoded.id || !decoded.role || !decoded.shopId) {
       res.status(401).json({ success: false, message: 'Malformed authentication token' });
       return;
     }
 
+    const payload = decoded as JwtUserPayload;
     req.user = {
-      id: decoded.id,
-      email: decoded.email,
-      name: decoded.name,
-      role: decoded.role,
-      shopId: decoded.shopId,
-      isDemo: Boolean(decoded.isDemo),
+      id: String(payload.id),
+      email: String(payload.email || ''),
+      name: String(payload.name || ''),
+      role: payload.role as UserRole,
+      shopId: String(payload.shopId),
+      isDemo: Boolean(payload.isDemo),
     };
 
     next();
@@ -90,16 +100,19 @@ export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunctio
     return next();
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
-    if (!err && decoded && decoded.id && decoded.role && decoded.shopId) {
-      req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        name: decoded.name,
-        role: decoded.role,
-        shopId: decoded.shopId,
-        isDemo: Boolean(decoded.isDemo),
-      };
+  jwt.verify(token, JWT_SECRET, (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
+    if (!err && decoded && typeof decoded !== 'string') {
+      const payload = decoded as JwtUserPayload;
+      if (payload.id && payload.role && payload.shopId) {
+        req.user = {
+          id: String(payload.id),
+          email: String(payload.email || ''),
+          name: String(payload.name || ''),
+          role: payload.role as UserRole,
+          shopId: String(payload.shopId),
+          isDemo: Boolean(payload.isDemo),
+        };
+      }
     }
     next();
   });

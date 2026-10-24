@@ -70,9 +70,15 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Global Error Handler
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+interface HttpError extends Error {
+  status?: number;
+  statusCode?: number;
+}
+
+app.use((err: HttpError, _req: Request, res: Response, _next: NextFunction) => {
   console.error('[Unhandled Error]:', err);
-  res.status(err.status || 500).json({
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({
     success: false,
     message: err.message || 'Internal server error',
   });
