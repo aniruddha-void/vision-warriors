@@ -2,22 +2,43 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
+import { config, validateEnv } from './config/env.js';
 import { connectDB } from './config/db.js';
 import apiRouter from './routes/api.js';
 import { CustomerModel } from './models/Customer.js';
 import { seedDatabase } from './controllers/miscController.js';
 
-dotenv.config();
+// Validate environment variables on startup
+validateEnv();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = config.PORT;
 
 // Security & Parsing Middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow non-browser requests (mobile apps, server-to-server, curl)
+      if (!origin) return callback(null, true);
+
+      // In development or test, allow all origins
+      if (!config.IS_PRODUCTION) {
+        return callback(null, true);
+      }
+
+      // In production, enforce whitelist (FRONTEND_URL & ALLOWED_ORIGINS)
+      const isAllowed = config.ALLOWED_ORIGINS.some(
+        (allowed) => allowed === origin || allowed === origin.replace(/\/+$/, '')
+      );
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+
+      console.warn(`[CORS Blocked] Origin not allowed: ${origin}`);
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );

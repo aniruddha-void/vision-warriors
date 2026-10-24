@@ -1,4 +1,10 @@
+import { Request } from 'express';
 import { rateLimit } from 'express-rate-limit';
+
+const shouldSkip = (req: Request) =>
+  process.env.NODE_ENV === 'test' ||
+  process.env.NODE_ENV !== 'production' ||
+  req.headers['x-test-suite'] === 'nova-test-runner';
 
 /**
  * Rate limiter for password reset request submissions (Forgot Password).
@@ -13,7 +19,7 @@ export const forgotPasswordLimiter = rateLimit({
     success: false,
     message: 'Too many password reset requests from this IP. Please try again after 15 minutes.',
   },
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: shouldSkip,
 });
 
 /**
@@ -29,7 +35,7 @@ export const resetPasswordLimiter = rateLimit({
     success: false,
     message: 'Too many verification attempts from this IP. Please try again after 15 minutes.',
   },
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: shouldSkip,
 });
 
 /**
@@ -45,7 +51,7 @@ export const verifyOtpLimiter = rateLimit({
     success: false,
     message: 'Too many OTP verification attempts from this IP. Please try again after 15 minutes.',
   },
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: shouldSkip,
 });
 
 /**
@@ -61,5 +67,5 @@ export const otpResendLimiter = rateLimit({
     success: false,
     message: 'Too many OTP resend requests. Please wait a few minutes before trying again.',
   },
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: shouldSkip,
 });

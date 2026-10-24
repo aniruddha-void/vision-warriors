@@ -55,6 +55,7 @@ async function request(path: string, options: {
 } = {}) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'x-test-suite': 'nova-test-runner',
     ...(options.headers || {}),
   };
 
@@ -258,7 +259,7 @@ async function main() {
   });
 
   let validResetRawToken = '';
-  await runTest('Authentication', 'Forgot Password: valid email sets SHA-256 token hash & 15-minute expiry in DB', async () => {
+  await runTest('Authentication', 'Forgot Password: valid email sets SHA-256 OTP hash & 5-minute expiry in DB', async () => {
     const res = await request('/auth/forgot-password', {
       method: 'POST',
       body: { email: testEmail },
@@ -266,23 +267,31 @@ async function main() {
     assertEqual(res.status, 200, 'Forgot password returns 200 for registered retailer');
     assert(res.data.success, 'Success is true');
 
-    // Verify token hash is stored securely in database
-    const userDoc = await User.findOne({ email: testEmail }).select('+resetPasswordToken +resetPasswordExpires');
+    // Verify OTP hash is stored securely in database
+    const userDoc = await User.findOne({ email: testEmail }).select('+resetPasswordOtp +resetPasswordOtpExpires');
     assert(userDoc, 'User exists in database');
-    assert(userDoc?.resetPasswordToken, 'Reset token hash must be set in database');
-    assertEqual(userDoc?.resetPasswordToken?.length, 64, 'Token is stored as 64-character SHA-256 hex hash');
-    assert(userDoc?.resetPasswordExpires, 'Token expiry must be set');
-    const expiryTime = userDoc!.resetPasswordExpires!.getTime();
+    assert(userDoc?.resetPasswordOtp, 'Reset OTP hash must be set in database');
+    assertEqual(userDoc?.resetPasswordOtp?.length, 64, 'OTP is stored as 64-character SHA-256 hex hash');
+    assert(userDoc?.resetPasswordOtpExpires, 'OTP expiry must be set');
+    const expiryTime = userDoc!.resetPasswordOtpExpires!.getTime();
     const now = Date.now();
     assert(expiryTime > now, 'Expiry time must be in future');
-    assert(expiryTime <= now + 16 * 60 * 1000, 'Expiry time must be within 15 minutes');
+    assert(expiryTime <= now + 6 * 60 * 1000, 'Expiry time must be within 5 minutes');
 
-    // Create a known cryptographic test token for subsequent verification tests
-    validResetRawToken = crypto.randomBytes(32).toString('hex');
-    const hashed = crypto.createHash('sha256').update(validResetRawToken).digest('hex');
-    userDoc!.resetPasswordToken = hashed;
-    userDoc!.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    // Test verify-otp with a known test OTP to obtain reset authorization token
+    const testOtp = '123456';
+    const hashedOtp = crypto.createHash('sha256').update(testOtp).digest('hex');
+    userDoc!.resetPasswordOtp = hashedOtp;
+    userDoc!.resetPasswordOtpExpires = new Date(Date.now() + 5 * 60 * 1000);
     await userDoc!.save();
+
+    const otpRes = await request('/auth/verify-reset-otp', {
+      method: 'POST',
+      body: { email: testEmail, otp: testOtp },
+    });
+    assertEqual(otpRes.status, 200, 'Verify OTP returns 200 with resetToken');
+    assert(otpRes.data.resetToken, 'resetToken returned');
+    validResetRawToken = otpRes.data.resetToken;
   });
 
   await runTest('Authentication', 'Verify Reset Token: missing token query parameter rejected with 400', async () => {

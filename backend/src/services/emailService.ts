@@ -1,5 +1,6 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import { Customer, CustomerCategory } from '../types/index.js';
+import { config } from '../config/env.js';
 
 export interface EmailOptions {
   to: string;
@@ -31,8 +32,8 @@ export interface EmailSendResult {
 let transporterInstance: Transporter | null = null;
 
 export function getEmailTransporter(): Transporter | null {
-  const user = process.env.EMAIL_USER?.trim();
-  const pass = process.env.EMAIL_PASS?.trim();
+  const user = config.EMAIL_USER;
+  const pass = config.EMAIL_PASS;
 
   if (!user || !pass) {
     return null;
@@ -59,8 +60,8 @@ export function getEmailTransporter(): Transporter | null {
  * Verifies if the email service has credentials configured and can connect to SMTP.
  */
 export async function verifyEmailConfig(): Promise<{ configured: boolean; verified: boolean; message: string }> {
-  const user = process.env.EMAIL_USER?.trim();
-  const pass = process.env.EMAIL_PASS?.trim();
+  const user = config.EMAIL_USER;
+  const pass = config.EMAIL_PASS;
 
   if (!user || !pass) {
     return {
@@ -91,9 +92,9 @@ export async function verifyEmailConfig(): Promise<{ configured: boolean; verifi
  * Core email sender with error handling and secure logging.
  */
 export async function sendEmail(options: EmailOptions): Promise<EmailSendResult> {
-  const user = process.env.EMAIL_USER?.trim();
-  const pass = process.env.EMAIL_PASS?.trim();
-  const from = process.env.EMAIL_FROM?.trim() || user || 'Nova Insights <no-reply@novainsights.com>';
+  const user = config.EMAIL_USER;
+  const pass = config.EMAIL_PASS;
+  const from = config.EMAIL_FROM;
 
   // If credentials are not set, simulate sending in development/testing
   if (!user || !pass) {
@@ -217,7 +218,7 @@ export async function sendOfferEmail(params: SendOfferEmailParams): Promise<Emai
       : 'our signature handcrafted beverages and treats';
 
   const validity = validityText || (category === 'IRREGULAR' ? 'Valid for 7 days' : 'Valid for 14 days');
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = config.FRONTEND_URL;
   const consentPortalUrl = `${frontendUrl}/consent/${customer.id}`;
 
   // 4. Construct Subject & Content

@@ -3,7 +3,11 @@ node_modules/
 
 # Environment credentials
 .env
+.env.*
 .env.local
+.env.*.local
+!.env.example
+!.env.*.example
 
 # Output
 dist/

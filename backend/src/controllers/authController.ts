@@ -6,9 +6,10 @@ import { SettingsModel } from '../models/LogsAndSettings.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { sendEmail, sendPasswordResetEmail, sendPasswordResetOtpEmail } from '../services/emailService.js';
 import { UserRole } from '../types/index.js';
+import { config } from '../config/env.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_nova_insights_jwt_token_key_2026';
-const JWT_EXPIRES_IN = '7d';
+const JWT_SECRET = config.JWT_SECRET;
+const JWT_EXPIRES_IN = config.JWT_EXPIRES_IN;
 
 /**
  * Password strength policy:
@@ -42,8 +43,8 @@ export function validateEmailFormat(email: string): boolean {
 function setAuthCookie(res: Response, token: string): void {
   res.cookie('nova_auth_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: config.IS_PRODUCTION,
+    sameSite: config.IS_PRODUCTION ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/',
   });
@@ -636,8 +637,8 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
 export function logout(_req: Request, res: Response): void {
   res.clearCookie('nova_auth_token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: config.IS_PRODUCTION,
+    sameSite: config.IS_PRODUCTION ? 'none' : 'lax',
     path: '/',
   });
   res.json({ success: true, message: 'Signed out successfully' });

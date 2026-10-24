@@ -12,7 +12,8 @@ import {
   NovaSettings,
 } from '../types';
 
-const API_BASE = '/api';
+const rawApiBase = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE = rawApiBase.replace(/\/+$/, '');
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem('nova_auth_token');
@@ -25,7 +26,8 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${url}`, {
+  const endpoint = url.startsWith('/') ? url : `/${url}`;
+  const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     credentials: 'include',
     headers,

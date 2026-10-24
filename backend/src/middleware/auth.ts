@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserRole } from '../types/index.js';
+import { config } from '../config/env.js';
 
 export interface AuthUser {
   id: string;
@@ -15,7 +16,7 @@ export interface AuthRequest extends Request {
   user?: AuthUser;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_nova_insights_jwt_token_key_2026';
+const JWT_SECRET = config.JWT_SECRET;
 
 export function extractToken(req: Request): string | null {
   const authHeader = req.headers['authorization'];
